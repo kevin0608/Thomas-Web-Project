@@ -5,9 +5,28 @@ import pandas as pd
 from datetime import datetime
 import altair as alt
 
-DATA_FILE = "data.json"
+import firebase_admin
+from firebase_admin import credentials, firestore
 
-# Define your access code
+# Path to your Firebase service account key file (update with your actual path)
+cred_path = "thomas-web-eb178-firebase-adminsdk-fbsvc-e8cce9c266.json"
+
+# Check if the Firebase app is already initialized to prevent reinitialization errors
+if not firebase_admin._apps:
+    try:
+        cred = credentials.Certificate(cred_path)
+        # Initialize Firebase app with the credentials
+        firebase_admin.initialize_app(cred)
+        st.info("Firebase initialized successfully.")
+    except Exception as e:
+        st.error(f"Error initializing Firebase: {e}")
+        st.stop()  # Stop the app if Firebase fails to initialize
+
+# Access Firestore
+db = firestore.client()
+
+# Constants
+DATA_FILE = "data.json"
 ACCESS_CODE = "2206"  # Change this to your own secret code
 
 # Load existing data
@@ -32,18 +51,15 @@ if "logged_in" not in st.session_state:
 # Custom CSS to style the input and center it
 st.markdown("""
     <style>
-        /* Style the input to make it smaller and center it */
         .stTextInput > div > div > input {
-            width: 100;  /* Set the width of the input box */
-            margin: 0 auto;  /* Center the input box */
+            width: 100;
+            margin: 0 auto;
             display: block;
         }
-        /* Style the button to center it */
         .stButton > button {
-            margin: 0 auto;  /* Center the button */
+            margin: 0 auto;
             display: block;
         }
-        /* Optional: Style the container to center everything */
         .stContainer {
             display: flex;
             flex-direction: column;
@@ -253,31 +269,21 @@ else:
                     col1, col2 = st.columns(2)
 
                     with col1:
-                        lose_currency = st.number_input(f"Amount to deduct for {player['full_name']}", min_value=0, value=0)
-                        if st.button(f"❌ Deduct Currency for {player['full_name']}", key=f"lose_{player['full_name']}"):
-                            if lose_currency > current_currency:
-                                st.warning(f"Cannot deduct more currency than {player['full_name']} has!")
-                            else:
-                                new_currency = current_currency - lose_currency
-                                currency_pot += lose_currency
-                                data["events"][selected_date]["players"][i - 1]["currency"] = new_currency
-                                data["events"][selected_date]["currency_pot"] = currency_pot
-                                save_data(data)
-                                st.success(f"{lose_currency} currency deducted from {player['full_name']}.")
-                                # Refresh page to show updated currency
-                                st.rerun()
+                        st.write("Adjust Currency:")
+                        currency = st.number_input(f"Set Currency for {player['full_name']}", min_value=0, value=current_currency)
 
                     with col2:
-                        add_currency = st.number_input(f"Amount to add for {player['full_name']}", min_value=0, value=0)
-                        if st.button(f"✅ Add Currency to {player['full_name']}", key=f"add_{player['full_name']}"):
-                            if add_currency > currency_pot:
-                                st.warning(f"Not enough currency in the pot to add {add_currency} to {player['full_name']}.")
-                            else:
-                                new_currency = current_currency + add_currency
-                                currency_pot -= add_currency
-                                data["events"][selected_date]["players"][i - 1]["currency"] = new_currency
-                                data["events"][selected_date]["currency_pot"] = currency_pot
-                                save_data(data)
-                                st.success(f"{add_currency} currency added to {player['full_name']}.")
-                                # Refresh page to show updated currency
-                                st.rerun()
+                        st.write(f"Player's Secret")
+                        secrets = st.text_input(f"Secrets for {player['full_name']}", value=player.get("secrets", ""))
+
+                    if st.button(f"Save for {player['full_name']}", key=f"save_{i}"):
+                        player["currency"] = currency
+                        player["secrets"] = secrets
+                        # Save to file
+                        data["events"][selected_date]["players"] = players
+                        save_data(data)
+                        st.success(f"Updated data for {player['full_name']}")
+
+                    st.altair_chart(bar, use_container_width=True)
+        else:
+            st.info("No players found for this event date.")

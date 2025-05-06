@@ -1,23 +1,23 @@
 import streamlit as st
-import json
+import firebase_admin
+from firebase_admin import credentials, firestore
 from datetime import date
+import json
 import os
 
-DATA_FILE = "data.json"
+# Initialize Firebase Admin SDK if not already initialized
+if not firebase_admin._apps:
+    try:
+        cred = credentials.Certificate("firebase_credentials.json")  # replace with your file name
+        firebase_admin.initialize_app(cred)
+        st.info("Firebase initialized successfully.")
+    except Exception as e:
+        st.error(f"Error initializing Firebase: {e}")
+        st.stop()  # Stop the app if Firebase fails to initialize
 
-# Load existing data
-def load_data():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            return json.load(f)
-    return {"events": {}}
+# Initialize Firestore
+db = firestore.client()
 
-# Save data to JSON
-def save_data(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=4, default=str)
-
-# Streamlit UI
 st.title("Event Registration Form")
 
 with st.form("event_form"):
@@ -29,36 +29,42 @@ with st.form("event_form"):
     event_date = st.date_input("Event Date")
     submit = st.form_submit_button("Submit")
 
-    # Check if any field is empty
     if submit:
-        key = event_date.isoformat()  # Use date only (YYYY-MM-DD)
-
-        # Load and update data
-        data = load_data()
         if not full_name or not age or not secrets or not email or not phone:
             st.error("All fields are required!")
         else:
             new_user = {
-            "full_name": full_name,
-            "age": age,
-            "secrets": secrets,
-            "email": email,
-            "phone": phone,
-            "event_date": event_date,
-            "currency": 2000  # Add default currency
-        }
+                "full_name": full_name,
+                "age": age,
+                "secrets": secrets,
+                "email": email,
+                "phone": phone,
+                "event_date": str(event_date),
+                "currency": 2000  # Set default currency for the user
+            }
 
-            # Check if the event date already exists
-            if event_date.isoformat() not in data["events"]:
-                data["events"][event_date.isoformat()] = {
-                    "players": [],  # Initialize players list
-                    "notes": ""     # Initialize notes as an empty string
-                }
+            event_key = event_date.isoformat()  # Use the event date as a key
+            event_ref = db.collection("events").document(event_key)
 
-            # Add the new player to the players list
-            data["events"][event_date.isoformat()]["players"].append(new_user)
+            try:
+                # Get existing event or create a new one if none exists
+                event_doc = event_ref.get()
+                if event_doc.exists:
+                    event_data = event_doc.to_dict()
+                    players = event_data.get("players", [])
+                else:
+                    players = []
 
-            # Save updated data
-            save_data(data)
-            st.success(f"Form Submitted!")
-            st.balloons()
+                # Add the new user to the list of players
+                players.append(new_user)
+
+                # Update the event document with new player data
+                event_ref.set({
+                    "players": players,
+                    "notes": event_doc.to_dict().get("notes", "") if event_doc.exists else ""  # Retain existing notes if available
+                })
+
+                st.success("Form Submitted!")
+                st.balloons()  # Celebrate with balloons
+            except Exception as e:
+                st.error(f"Error submitting form: {e}")
