@@ -9,7 +9,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 # Path to your Firebase service account key file (update with your actual path)
-cred_path = "thomas-web-eb178-firebase-adminsdk-fbsvc-e8cce9c266.json"
+cred_path = "/Users/Kevin/Streamlit Thomas Project/thomas-web-eb178-firebase-adminsdk-fbsvc-e8cce9c266.json"
 
 # Check if the Firebase app is already initialized to prevent reinitialization errors
 if not firebase_admin._apps:
