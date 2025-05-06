@@ -15,8 +15,9 @@ if not firebase_admin._apps:
         st.error(f"Error initializing Firebase: {e}")
         st.stop()  # Stop the app if Firebase fails to initialize
 
-# Initialize Firestore client
+# Validate Firestore client
 db = firestore.client()
+st.write(f"Firestore client initialized: {db}")
 
 # Set up the Streamlit app
 st.title("Event Registration Form")
@@ -74,3 +75,4 @@ with st.form("event_form"):
 
             except Exception as e:
                 st.error(f"Error submitting form: {e}")  # Handle any errors during Firestore interaction
+                st.write(f"Exception details: {e}")
