@@ -8,7 +8,7 @@ import os
 # Initialize Firebase Admin SDK if not already initialized
 if not firebase_admin._apps:
     try:
-        cred = credentials.Certificate("firebase_credentials.json")  # replace with your file name
+        cred = credentials.Certificate("/Users/Kevin/Streamlit Thomas Project/thomas-web-eb178-firebase-adminsdk-fbsvc-e8cce9c266.json")  # replace with your file name
         firebase_admin.initialize_app(cred)
         st.info("Firebase initialized successfully.")
     except Exception as e:
