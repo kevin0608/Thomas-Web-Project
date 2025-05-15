@@ -7,16 +7,17 @@ from datetime import date
 import json
 
 if not firebase_admin._apps:
-    # Parse the JSON string from st.secrets
+    # Load JSON string from secrets
     cred_json_str = st.secrets["firebase"]["credentials"]
-    cred_dict = json.loads(cred_json_str)
+    cred_dict = json.loads(cred_json_str)  # parse JSON
 
-    # Fix the private_key newlines
-    cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
+    # No need to replace \n, it's already correct now
 
-    # Initialize Firebase with these credentials
+    # Initialize Firebase app
     cred = credentials.Certificate(cred_dict)
     firebase_admin.initialize_app(cred)
+
+db = firestore.client()
 
 db = firestore.client()
 

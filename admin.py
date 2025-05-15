@@ -11,19 +11,17 @@ import streamlit as st
 import json
 
 if not firebase_admin._apps:
-    # Load Firebase credentials JSON string from Streamlit secrets
+    # Load JSON string from secrets
     cred_json_str = st.secrets["firebase"]["credentials"]
+    cred_dict = json.loads(cred_json_str)  # parse JSON
 
-    # Parse the JSON string into a dict
-    cred_dict = json.loads(cred_json_str)
+    # No need to replace \n, it's already correct now
 
-    # Fix line breaks in private_key
-    cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
-
-    # Initialize Firebase with the credentials dict
+    # Initialize Firebase app
     cred = credentials.Certificate(cred_dict)
     firebase_admin.initialize_app(cred)
 
+db = firestore.client()
 db = firestore.client()
 
 ACCESS_CODE = "2706"
