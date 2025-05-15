@@ -5,9 +5,23 @@ import altair as alt
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-# Firebase initialization (only once)
+import firebase_admin
+from firebase_admin import credentials
+import streamlit as st
+import json
+
 if not firebase_admin._apps:
-    cred = credentials.Certificate("path/to/your/serviceAccountKey.json")  # Update this path
+    # Load Firebase credentials JSON string from Streamlit secrets
+    cred_json_str = st.secrets["firebase"]["credentials"]
+
+    # Parse the JSON string into a dict
+    cred_dict = json.loads(cred_json_str)
+
+    # Fix line breaks in private_key
+    cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
+
+    # Initialize Firebase with the credentials dict
+    cred = credentials.Certificate(cred_dict)
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()

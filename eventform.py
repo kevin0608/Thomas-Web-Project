@@ -4,10 +4,18 @@ from firebase_admin import credentials, firestore
 import smtplib
 from email.message import EmailMessage
 from datetime import date
+import json
 
-# --- Initialize Firebase ---
 if not firebase_admin._apps:
-    cred = credentials.Certificate(".firebase_key.json")  # Your local JSON file
+    # Parse the JSON string from st.secrets
+    cred_json_str = st.secrets["firebase"]["credentials"]
+    cred_dict = json.loads(cred_json_str)
+
+    # Fix the private_key newlines
+    cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
+
+    # Initialize Firebase with these credentials
+    cred = credentials.Certificate(cred_dict)
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
