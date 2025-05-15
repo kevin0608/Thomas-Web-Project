@@ -4,24 +4,23 @@ from datetime import datetime
 import altair as alt
 import firebase_admin
 from firebase_admin import credentials, firestore
-
-import firebase_admin
-from firebase_admin import credentials
-import streamlit as st
 import json
 
 if not firebase_admin._apps:
     # Load JSON string from secrets
     cred_json_str = st.secrets["firebase"]["credentials"]
-    cred_dict = json.loads(cred_json_str)  # parse JSON
 
-    # No need to replace \n, it's already correct now
+    # Replace escaped newlines with actual newlines
+    cred_json_str = cred_json_str.replace("\\n", "\n")
+
+    # Parse the JSON string into a dictionary
+    cred_dict = json.loads(cred_json_str)
 
     # Initialize Firebase app
     cred = credentials.Certificate(cred_dict)
     firebase_admin.initialize_app(cred)
 
-db = firestore.client()
+# Get Firestore client
 db = firestore.client()
 
 ACCESS_CODE = "2706"
