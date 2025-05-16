@@ -243,28 +243,28 @@ else:
                 current_currency = player.get("currency", 2000)
                 st.write(f"**{player.get('name', 'No Name')}** : {current_currency}")
 
-                # Inject CSS to reduce the size of all number inputs
-                st.markdown(
-                    """
-                    <style>
-                    input[type=number] {
-                        max-width: 80px;  /* Adjust width */
-                        padding: 4px 6px;
-                        font-size: 14px;  /* Adjust font size */
-                    }
-                    </style>
-                    """,
-                    unsafe_allow_html=True,
-                )
+                st.markdown("""
+                <style>
+                /* Reduce padding inside the expander container */
+                [data-testid="stExpander"] > div {
+                    padding-top: 4px !important;
+                    padding-bottom: 4px !important;
+                }
+
+                /* Reduce margin around the expander header */
+                [data-testid="stExpander"] > div > div {
+                    margin-bottom: 0 !important;
+                    margin-top: 0 !important;
+                }
+                </style>
+                """, unsafe_allow_html=True)
 
                 with st.expander(""):
-                    col1, col2, col3, col4 = st.columns([1, 0.5, 1, 0.5])  # narrow columns for inputs and buttons
+                    col1, col2 = st.columns([1, 1])
 
                     with col1:
                         lose_currency = st.number_input(f"", min_value=0, value=0, key=f"lose_{i}")
-                    with col2:
                         if st.button(f"−", key=f"lose_btn_{i}"):
-                            # your logic here
                             if lose_currency > current_currency:
                                 st.warning(f"Cannot deduct more currency than {player.get('name', 'No Name')} has!")
                             else:
@@ -277,11 +277,9 @@ else:
                                 st.success(f"{lose_currency} currency deducted from {player.get('name', 'No Name')}.")
                                 st.rerun()
 
-                    with col3:
+                    with col2:
                         add_currency = st.number_input(f"", min_value=0, value=0, key=f"add_{i}")
-                    with col4:
                         if st.button(f"✚", key=f"add_btn_{i}"):
-                            # your logic here
                             if add_currency > currency_pot:
                                 st.warning(f"Not enough currency in the pot to add {add_currency} to {player.get('name', 'No Name')}.")
                             else:
@@ -293,6 +291,5 @@ else:
                                 save_event_data(selected_date_str, event_data)
                                 st.success(f"{add_currency} currency added to {player.get('name', 'No Name')}.")
                                 st.rerun()
-
         else:
             st.warning("No players found for this event date.")
