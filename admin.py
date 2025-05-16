@@ -172,7 +172,7 @@ else:
         col1, col2 = st.columns([3, 1])  # Adjust width ratio as needed
 
         with col1:
-            st.subheader("Event Players")
+            st.subheader("")
 
         with col2:
             if not event_dates:
@@ -186,7 +186,7 @@ else:
 
         if players:
             bar_data = pd.DataFrame([
-                {"Player": p.get("name", ""), "Currency": p.get("currency", 2000)}
+                {"": p.get("name", ""), "Currency": p.get("currency", 2000)}
                 for p in players
             ])
 
