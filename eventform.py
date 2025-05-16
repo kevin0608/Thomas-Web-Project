@@ -22,8 +22,8 @@ def send_confirmation_email(to_email, user_name, event_date):
     email_password = st.secrets["email"]["password"]
 
     msg = EmailMessage()
-    msg["Subject"] = "Thank You for Registering!"
-    msg["From"] = email_address
+    msg["Subject"] = "Event Booking Confirmed!"
+    msg["From"] = "Tom Gom"
     msg["To"] = to_email
     msg.set_content(f"""
     Hi {user_name},
@@ -32,7 +32,7 @@ def send_confirmation_email(to_email, user_name, event_date):
     We're excited to have you with us!
 
     Best regards,  
-    Event Team
+    Gom 
     """)
 
     try:
@@ -63,21 +63,28 @@ with st.form("event_form"):
 
             try:
                 doc = event_ref.get()
-                if not doc.exists:
+                players = []
+                if doc.exists:
+                    players = doc.to_dict().get("players", [])
+                else:
                     event_ref.set({"players": []})
 
-                event_ref.update({
-                    "players": firestore.ArrayUnion([{
-                        "name": full_name,
-                        "age": age,
-                        "secrets": secrets,
-                        "email": email,
-                        "phone": phone
-                    }])
-                })
+                # Check if email already exists
+                if any(player.get("email") == email for player in players):
+                    st.error("This email has already been registered for this event.")
+                else:
+                    event_ref.update({
+                        "players": firestore.ArrayUnion([{
+                            "name": full_name,
+                            "age": age,
+                            "secrets": secrets,
+                            "email": email,
+                            "phone": phone
+                        }])
+                    })
 
-                send_confirmation_email(email, full_name, event_date)
-                st.success("Registration successful! Confirmation email sent.")
+                    send_confirmation_email(email, full_name, event_date)
+                    st.success("Registration successful!")
 
             except Exception as e:
                 st.error(f"Error saving to Firestore: {e}")

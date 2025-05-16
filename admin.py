@@ -145,7 +145,7 @@ else:
                             data["events"][selected_date_str]["players"] = players
                             save_data(data)
                             st.success(f"Deleted {player['full_name']}")
-                            st.experimental_rerun()
+                            st.rerun()
 
             st.subheader("📓Notes Space")
             note_input = st.text_area("Write notes for this event date here...", value=note)
@@ -245,7 +245,7 @@ else:
                                 data["events"][selected_date]["currency_pot"] = currency_pot
                                 save_data(data)
                                 st.success(f"{lose_currency} currency deducted from {player['full_name']}.")
-                                st.experimental_rerun()
+                                st.rerun()
 
                     with col2:
                         add_currency = st.number_input(f"Amount to add for {player['full_name']}", min_value=0, value=0)
