@@ -127,49 +127,49 @@ else:
                 st.warning("No players found for this date.")
         else:
             if players:
-        for i, player in enumerate(players, 1):
-            with st.expander(f"{i}. {player.get('name', 'No Name')}"):
-                st.write(f"**Age:** {player.get('age', '')}")
-                st.write(f"**Email:** {player.get('email', '')}")
-                st.write(f"**Phone:** {player.get('phone', '')}")
-                st.write(f"**Secrets:** {player.get('secrets', '')}")
-                st.write(f"**Currency:** {player.get('currency', 2000)}")
+                for i, player in enumerate(players, 1):
+                    with st.expander(f"{i}. {player.get('name', 'No Name')}"):
+                        st.write(f"**Age:** {player.get('age', '')}")
+                        st.write(f"**Email:** {player.get('email', '')}")
+                        st.write(f"**Phone:** {player.get('phone', '')}")
+                        st.write(f"**Secrets:** {player.get('secrets', '')}")
+                        st.write(f"**Currency:** {player.get('currency', 2000)}")
 
-                # Load existing note for this player from data (not session_state) for fresh data each run
-                player_note_key = f"note_player_{i}_{selected_date_str}"
-                if player_note_key not in st.session_state:
-                    st.session_state[player_note_key] = player.get("note", "")
+                        # Load existing note for this player from data (not session_state) for fresh data each run
+                        player_note_key = f"note_player_{i}_{selected_date_str}"
+                        if player_note_key not in st.session_state:
+                            st.session_state[player_note_key] = player.get("note", "")
 
-                note_text = st.text_area(
-                    "Player Note",
-                    value=st.session_state[player_note_key],
-                    key=player_note_key,
-                    height=100,
-                    placeholder="Add notes about this player here..."
-                )
+                        note_text = st.text_area(
+                            "Player Note",
+                            value=st.session_state[player_note_key],
+                            key=player_note_key,
+                            height=100,
+                            placeholder="Add notes about this player here..."
+                        )
 
-                if st.button(f"💾 Save Note for {player.get('name', 'No Name')}", key=f"save_note_{i}_{selected_date_str}"):
-                    event_data["players"][i-1]["note"] = note_text
-                    save_event_data(selected_date_str, event_data)
+                        if st.button(f"💾 Save Note for {player.get('name', 'No Name')}", key=f"save_note_{i}_{selected_date_str}"):
+                            event_data["players"][i-1]["note"] = note_text
+                            save_event_data(selected_date_str, event_data)
 
-                    st.session_state[player_note_key] = note_text
+                            st.session_state[player_note_key] = note_text
 
-                    st.success("Player note saved!")
-                    st.rerun()
+                            st.success("Player note saved!")
+                            st.rerun()
 
-                if st.button(f"Delete Player {i}", key=f"delete_{i}_{selected_date_str}"):
-                    new_players = [p for idx, p in enumerate(players) if idx != i-1]
-                    update_players(selected_date_str, new_players)
-                    st.success(f"Deleted {player.get('name', 'player')}")
-                    st.rerun()
+                        if st.button(f"Delete Player {i}", key=f"delete_{i}_{selected_date_str}"):
+                            new_players = [p for idx, p in enumerate(players) if idx != i-1]
+                            update_players(selected_date_str, new_players)
+                            st.success(f"Deleted {player.get('name', 'player')}")
+                            st.rerun()
 
-                st.subheader("📓Notes Space")
-                note_input = st.text_area("Write notes for this event date here...", value=note)
+                        st.subheader("📓Notes Space")
+                        note_input = st.text_area("Write notes for this event date here...", value=note)
 
-                if st.button("💾 Save Notes"):
-                    event_data["notes"] = note_input
-                    save_event_data(selected_date_str, event_data)
-                    st.success("Notes saved successfully!")
+                        if st.button("💾 Save Notes"):
+                            event_data["notes"] = note_input
+                            save_event_data(selected_date_str, event_data)
+                            st.success("Notes saved successfully!")
 
     elif page == "Event":
         col1, col2 = st.columns([3, 1])  # Adjust width ratio as needed
