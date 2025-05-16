@@ -55,45 +55,48 @@ with st.form("event_form"):
     event_date = st.date_input("Event Date", min_value=date.today())
     submit = st.form_submit_button("Submit")
 
-    if submit:
-        if not full_name or not age or not secrets or not email or not phone:
-            st.error("All fields are required!")
-        else:
-            doc_id = event_date.isoformat()
-            event_ref = db.collection("events").document(doc_id)
+    import re
 
-            try:
-                doc = event_ref.get()
-                if not doc.exists:
-                    # Create the document if it doesn't exist
-                    event_ref.set({"players": []})
-                    players = []
-                else:
-                    players = doc.to_dict().get("players", [])
+def is_valid_email(email):
+    pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    return re.match(pattern, email) is not None
 
-                # ✅ Email duplication check
-                email_exists = any(
-                    p.get("email", "").strip().lower() == email.strip().lower()
-                    for p in players
-                )
+if submit:
+    if not full_name or not age or not secrets or not email or not phone:
+        st.error("All fields are required!")
+    elif not is_valid_email(email):
+        st.error("Please enter a valid email address!")
+    else:
+        doc_id = event_date.isoformat()
+        event_ref = db.collection("events").document(doc_id)
 
-                if email_exists:
-                    st.error(f"The email **{email}** is already registered for this event date.")
-                else:
-                    # ✅ Add new player if email is unique
-                    event_ref.update({
-                        "players": firestore.ArrayUnion([{
-                            "name": full_name,
-                            "age": age,
-                            "secrets": secrets,
-                            "email": email,
-                            "phone": phone
-                        }])
-                    })
+        try:
+            doc = event_ref.get()
+            if not doc.exists:
+                event_ref.set({"players": []})
+                players = []
+            else:
+                players = doc.to_dict().get("players", [])
 
-                    # Optional: send a confirmation
-                    send_confirmation_email(email, full_name, event_date)
-                    st.success("✅ Registration successful!")
+            email_exists = any(
+                p.get("email", "").strip().lower() == email.strip().lower()
+                for p in players
+            )
 
-            except Exception as e:
-                st.error(f"❌ Error saving to Firestore: {e}")
+            if email_exists:
+                st.error(f"The email **{email}** is already registered for this event date.")
+            else:
+                event_ref.update({
+                    "players": firestore.ArrayUnion([{
+                        "name": full_name,
+                        "age": age,
+                        "secrets": secrets,
+                        "email": email,
+                        "phone": phone
+                    }])
+                })
+                send_confirmation_email(email, full_name, event_date)
+                st.success("✅ Registration successful!")
+
+        except Exception as e:
+            st.error(f"❌ Error saving to Firestore: {e}")
