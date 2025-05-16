@@ -184,7 +184,22 @@ else:
         players = event_data.get("players", [])
         currency_pot = event_data.get("currency_pot", 0)
 
-        tile_style = """
+        if players:
+            bar_data = pd.DataFrame([
+                {"": p.get("name", ""), "Currency": p.get("currency", 2000)}
+                for p in players
+            ])
+
+            stacked_bar_chart = alt.Chart(bar_data).mark_bar().encode(
+                x='Currency:Q',
+                y='Player:N',
+                color='Player:N',
+                tooltip=["Player", "Currency"]
+            ).properties(
+                title="Players"
+            )
+
+            tile_style = """
                 <style>
                 .tile-container {
                     display: flex;
@@ -205,26 +220,11 @@ else:
                 }
                 </style>
             """
-        st.markdown(tile_style, unsafe_allow_html=True)
-        st.markdown(f'<div class="tile-container"><div class="tile">Current Currency Pot:<br>{currency_pot}</div></div>', unsafe_allow_html=True)
-
-        if players:
-            bar_data = pd.DataFrame([
-                {"": p.get("name", ""), "Currency": p.get("currency", 2000)}
-                for p in players
-            ])
-
-            stacked_bar_chart = alt.Chart(bar_data).mark_bar().encode(
-                x='Currency:Q',
-                y='Player:N',
-                color='Player:N',
-                tooltip=["Player", "Currency"]
-            ).properties(
-                title="Players"
-            )
+            st.markdown(tile_style, unsafe_allow_html=True)
+            st.markdown(f'<div class="tile-container"><div class="tile">Current Currency Pot:<br>{currency_pot}</div></div>', unsafe_allow_html=True)
 
             st.altair_chart(stacked_bar_chart, use_container_width=True)
-
+            
             for i, player in enumerate(players, 1):
                 current_currency = player.get("currency", 2000)
                 st.write(f"**{player.get('name', 'No Name')}** - Currency: {current_currency}")
