@@ -248,7 +248,7 @@ else:
 
                     with col1:
                         lose_currency = st.number_input(f"", min_value=0, value=0, key=f"lose_{i}")
-                        if st.button(f"-", key=f"lose_btn_{i}"):
+                        if st.button(f"⁻", key=f"lose_btn_{i}"):
                             if lose_currency > current_currency:
                                 st.warning(f"Cannot deduct more currency than {player.get('name', 'No Name')} has!")
                             else:
@@ -263,7 +263,7 @@ else:
 
                     with col2:
                         add_currency = st.number_input(f"", min_value=0, value=0, key=f"add_{i}")
-                        if st.button(f"+", key=f"add_btn_{i}"):
+                        if st.button(f"✚", key=f"add_btn_{i}"):
                             if add_currency > currency_pot:
                                 st.warning(f"Not enough currency in the pot to add {add_currency} to {player.get('name', 'No Name')}.")
                             else:
