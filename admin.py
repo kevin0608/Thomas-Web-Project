@@ -206,7 +206,7 @@ else:
             players_list = sorted(bar_data['Player'].unique())
             color_scale = alt.Scale(domain=players_list, range=custom_colors[:len(players_list)])
 
-            stacked_bar_chart = alt.Chart(bar_data).mark_bar(size=25).encode(
+            stacked_bar_chart = alt.Chart(bar_data).mark_bar(size=15).encode(
             x=alt.X('Currency:Q', axis=alt.Axis(title=None)),
             y=alt.Y('Player:N', axis=alt.Axis(title=None), sort=alt.EncodingSortField(field="Currency", order="descending")),
             color=alt.Color('Player:N', scale=color_scale, legend=None),
@@ -241,7 +241,7 @@ else:
 
             for i, player in enumerate(players, 1):
                 current_currency = player.get("currency", 2000)
-                st.write(f"**{player.get('name', 'No Name')}** - Currency: {current_currency}")
+                st.write(f"**{player.get('name', 'No Name')}** : {current_currency}")
 
                 with st.expander(f"Adjust Currency for {player.get('name', 'No Name')}"):
                     col1, col2 = st.columns(2)
