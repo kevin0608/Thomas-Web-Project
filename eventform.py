@@ -97,6 +97,7 @@ if submit:
                 })
                 send_confirmation_email(email, full_name, event_date)
                 st.success("✅ Registration successful!")
+                st.balloons()
 
         except Exception as e:
             st.error(f"❌ Error saving to Firestore: {e}")

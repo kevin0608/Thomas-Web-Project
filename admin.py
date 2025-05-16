@@ -272,15 +272,24 @@ else:
 
                 with st.expander("", expanded=False):
                     st.markdown(
-                        f"<div style='background-color: {player_color}; color: {font_color}; padding: 10px; border-radius: 8px;'>",
+                        f"""
+                        <div style='
+                            background-color: {player_color}; 
+                            color: {font_color}; 
+                            padding: 4px 6px;  /* smaller padding */
+                            border-radius: 6px; 
+                            font-size: 0.9rem;  /* smaller font */
+                            margin-bottom: 4px;
+                        '>
+                        """,
                         unsafe_allow_html=True
                     )
 
                     col1, col2 = st.columns([1, 1])
 
                     with col1:
-                        lose_currency = st.number_input(f"", min_value=0, value=0, key=f"lose_{i}")
-                        if st.button(f"−", key=f"lose_btn_{i}"):
+                        lose_currency = st.number_input("", min_value=0, value=0, key=f"lose_{i}", label_visibility="collapsed")
+                        if st.button("−", key=f"lose_btn_{i}"):
                             if lose_currency > current_currency:
                                 st.warning(f"Cannot deduct more currency than {player_name} has!")
                             else:
@@ -294,8 +303,8 @@ else:
                                 st.rerun()
 
                     with col2:
-                        add_currency = st.number_input(f"", min_value=0, value=0, key=f"add_{i}")
-                        if st.button(f"✚", key=f"add_btn_{i}"):
+                        add_currency = st.number_input("", min_value=0, value=0, key=f"add_{i}", label_visibility="collapsed")
+                        if st.button("✚", key=f"add_btn_{i}"):
                             if add_currency > currency_pot:
                                 st.warning(f"Not enough currency in the pot to add {add_currency} to {player_name}.")
                             else:
@@ -307,6 +316,8 @@ else:
                                 save_event_data(selected_date_str, event_data)
                                 st.success(f"{add_currency} currency added to {player_name}.")
                                 st.rerun()
+
+                    st.markdown("</div>", unsafe_allow_html=True)
 
                     st.markdown("</div>", unsafe_allow_html=True)
         else:
