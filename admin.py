@@ -5,6 +5,7 @@ import altair as alt
 import firebase_admin
 from firebase_admin import credentials, firestore
 import json
+from matplotlib.colors import to_rgb
 
 # Initialize Firebase app only if not already initialized
 if not firebase_admin._apps:
@@ -239,34 +240,46 @@ else:
 
             st.altair_chart(stacked_bar_chart, use_container_width=True)
 
-            for i, player in enumerate(players, 1):
-                current_currency = player.get("currency", 2000)
-                st.write(f"**{player.get('name', 'No Name')}** : {current_currency}")
+            def get_font_color(bg_color):
+                r, g, b = to_rgb(bg_color)
+                brightness = r*0.299 + g*0.587 + b*0.114
+                return "#000000" if brightness > 0.6 else "#ffffff"
 
-                st.markdown("""
+            # Style adjustments for expander padding/margin
+            st.markdown("""
                 <style>
-                /* Reduce padding inside the expander container */
                 [data-testid="stExpander"] > div {
                     padding-top: 4px !important;
                     padding-bottom: 4px !important;
                 }
-
-                /* Reduce margin around the expander header */
                 [data-testid="stExpander"] > div > div {
                     margin-bottom: 0 !important;
                     margin-top: 0 !important;
                 }
                 </style>
-                """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
-                with st.expander(""):
+            for i, player in enumerate(players, 1):
+                player_name = player.get("name", "No Name")
+                current_currency = player.get("currency", 2000)
+                player_color = custom_colors[(i - 1) % len(custom_colors)]
+                font_color = get_font_color(player_color)
+
+                st.write(f"**{player_name}** : {current_currency}")
+
+                with st.expander("", expanded=False):
+                    st.markdown(
+                        f"<div style='background-color: {player_color}; color: {font_color}; padding: 10px; border-radius: 8px;'>",
+                        unsafe_allow_html=True
+                    )
+
                     col1, col2 = st.columns([1, 1])
 
                     with col1:
                         lose_currency = st.number_input(f"", min_value=0, value=0, key=f"lose_{i}")
                         if st.button(f"−", key=f"lose_btn_{i}"):
                             if lose_currency > current_currency:
-                                st.warning(f"Cannot deduct more currency than {player.get('name', 'No Name')} has!")
+                                st.warning(f"Cannot deduct more currency than {player_name} has!")
                             else:
                                 new_currency = current_currency - lose_currency
                                 currency_pot += lose_currency
@@ -274,14 +287,14 @@ else:
                                 event_data["players"] = players
                                 event_data["currency_pot"] = currency_pot
                                 save_event_data(selected_date_str, event_data)
-                                st.success(f"{lose_currency} currency deducted from {player.get('name', 'No Name')}.")
+                                st.success(f"{lose_currency} currency deducted from {player_name}.")
                                 st.rerun()
 
                     with col2:
                         add_currency = st.number_input(f"", min_value=0, value=0, key=f"add_{i}")
                         if st.button(f"✚", key=f"add_btn_{i}"):
                             if add_currency > currency_pot:
-                                st.warning(f"Not enough currency in the pot to add {add_currency} to {player.get('name', 'No Name')}.")
+                                st.warning(f"Not enough currency in the pot to add {add_currency} to {player_name}.")
                             else:
                                 new_currency = current_currency + add_currency
                                 currency_pot -= add_currency
@@ -289,7 +302,9 @@ else:
                                 event_data["players"] = players
                                 event_data["currency_pot"] = currency_pot
                                 save_event_data(selected_date_str, event_data)
-                                st.success(f"{add_currency} currency added to {player.get('name', 'No Name')}.")
+                                st.success(f"{add_currency} currency added to {player_name}.")
                                 st.rerun()
+
+                    st.markdown("</div>", unsafe_allow_html=True)
         else:
             st.warning("No players found for this event date.")
