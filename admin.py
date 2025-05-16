@@ -195,8 +195,6 @@ else:
                 y=alt.Y('Player:N', axis=alt.Axis(title=None)),    # Hide y-axis title but keep tick labels (names)
                 color='Player:N',
                 tooltip=["Player", "Currency"]
-            ).properties(
-                title=None  # Removes chart title
             )
 
 
