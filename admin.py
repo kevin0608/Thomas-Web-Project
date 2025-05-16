@@ -190,7 +190,7 @@ else:
                 x='Currency:Q',
                 y='Player:N',
                 color='Player:N',
-                tooltip=["", ""]
+                tooltip=["Player", "Currency"]
             ).properties(
                 title="Players"
             )
