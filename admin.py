@@ -75,7 +75,7 @@ if not st.session_state.get('logged_in', False):
             st.session_state.logged_in = True
             st.success("Login successful! Redirecting...")
             st.balloons()
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Invalid code. Please try again.")
 
