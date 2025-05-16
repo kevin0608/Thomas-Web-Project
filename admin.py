@@ -243,7 +243,7 @@ else:
                 current_currency = player.get("currency", 2000)
                 st.write(f"**{player.get('name', 'No Name')}** : {current_currency}")
 
-                with st.expander(f"Adjust Currency for {player.get('name', 'No Name')}"):
+                with st.expander(f""):
                     col1, col2 = st.columns(2)
 
                     with col1:
