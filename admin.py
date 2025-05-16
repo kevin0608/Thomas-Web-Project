@@ -172,7 +172,7 @@ else:
         col1, col2 = st.columns([3, 1])  # Adjust width ratio as needed
 
         with col1:
-            st.subheader("Event Players")
+            st.subheader("")
 
         with col2:
             if not event_dates:
@@ -230,7 +230,7 @@ else:
                     font-weight: bold;
                     margin: 10px;
                     text-align: center;
-                    width: 1200px;
+                    width: 600px;
                 }
                 </style>
             """
