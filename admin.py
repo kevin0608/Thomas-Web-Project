@@ -139,6 +139,9 @@ else:
                         # Load existing note for this player from data (not session_state) for fresh data each run
                         player_note_key = f"note_player_{i}_{selected_date_str}"
 
+                        if player_note_key not in st.session_state:
+                            st.session_state[player_note_key] = ""
+
                         note_text = st.text_area(
                             "Player Note",
                             value=st.session_state[player_note_key],
