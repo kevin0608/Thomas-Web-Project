@@ -6,12 +6,10 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import json
 
-if not firebase_admin._apps:
-    cred_json_str = st.secrets["firebase"]["credentials"]
-    cred_json_str = cred_json_str.replace("\\n", "\n")
-    cred_dict = json.loads(cred_json_str)
-    cred = credentials.Certificate.from_certificate(cred_dict)  # ✅ fixed
-    firebase_admin.initialize_app(cred)
+cred_json_str = st.secrets["firebase"]["credentials"]
+cred_dict = json.loads(cred_json_str)  # parse JSON first
+cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")  # fix line breaks AFTER parsing
+cred = credentials.Certificate(cred_dict)
 db = firestore.client()
 
 ACCESS_CODE = "2706"
