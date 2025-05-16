@@ -63,28 +63,21 @@ with st.form("event_form"):
 
             try:
                 doc = event_ref.get()
-                players = []
-                if doc.exists:
-                    players = doc.to_dict().get("players", [])
-                else:
+                if not doc.exists:
                     event_ref.set({"players": []})
 
-                # Check if email already exists
-                if any(player.get("email") == email for player in players):
-                    st.error("This email has already been registered for this event.")
-                else:
-                    event_ref.update({
-                        "players": firestore.ArrayUnion([{
-                            "name": full_name,
-                            "age": age,
-                            "secrets": secrets,
-                            "email": email,
-                            "phone": phone
-                        }])
-                    })
+                event_ref.update({
+                    "players": firestore.ArrayUnion([{
+                        "name": full_name,
+                        "age": age,
+                        "secrets": secrets,
+                        "email": email,
+                        "phone": phone
+                    }])
+                })
 
-                    send_confirmation_email(email, full_name, event_date)
-                    st.success("Registration successful!")
+                send_confirmation_email(email, full_name, event_date)
+                st.success("Registration successful!.")
 
             except Exception as e:
                 st.error(f"Error saving to Firestore: {e}")
