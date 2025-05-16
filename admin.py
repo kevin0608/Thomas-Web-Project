@@ -145,17 +145,7 @@ else:
                             if st.button("Edit Name", key=f"edit_name_btn_{i}"):
                                 st.session_state[edit_name_key] = True
                                 st.rerun()
-                            if player_note_key not in st.session_state:
-                                st.session_state[player_note_key] = ""
-
-                            note_text = st.text_area(
-                                "Player Note",
-                                value=st.session_state[player_note_key],
-                                key=player_note_key,
-                                height=100,
-                                placeholder="Add notes about this player here..."
-                                )
-
+                        
                         else:
                             # Editing name input
                             new_name = st.text_input("Edit Name", value=player.get('name', ''), key=f"name_input_{i}")
