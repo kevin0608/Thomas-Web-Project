@@ -185,18 +185,33 @@ else:
         currency_pot = event_data.get("currency_pot", 0)
 
         if players:
+            # Example bar_data, replace with your players list
             bar_data = pd.DataFrame([
                 {"Player": p.get("name", ""), "Currency": p.get("currency", 2000)}
                 for p in players
             ])
 
+            # Define a large enough palette (here 40 distinct colors)
+            custom_colors = [
+                '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+                '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
+                '#393b79', '#637939', '#8c6d31', '#843c39', '#7b4173',
+                '#5254a3', '#9c9ede', '#e7ba52', '#e7969c', '#a55194',
+                '#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3',
+                '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd',
+                '#ccebc5', '#ffed6f', '#66c2a5', '#fc8d62', '#8da0cb',
+                '#e78ac3', '#a6d854', '#ffd92f', '#e5c494', '#b3b3b3'
+            ]
+
+            players_list = sorted(bar_data['Player'].unique())
+            color_scale = alt.Scale(domain=players_list, range=custom_colors[:len(players_list)])
+
             stacked_bar_chart = alt.Chart(bar_data).mark_bar().encode(
-                x=alt.X('Currency:Q', axis=alt.Axis(title=None)),  # Hide x-axis title
-                y=alt.Y('Player:N', axis=alt.Axis(title=None)),    # Hide y-axis title but keep tick labels (names)
-                color=alt.Color('Player:N', legend=None),
+                x=alt.X('Currency:Q', axis=alt.Axis(title=None)),
+                y=alt.Y('Player:N', axis=alt.Axis(title=None)),
+                color=alt.Color('Player:N', scale=color_scale, legend=None),
                 tooltip=["Player", "Currency"]
             )
-
 
             tile_style = """
                 <style>
