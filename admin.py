@@ -169,13 +169,17 @@ else:
                 st.success("Notes saved successfully!")
 
     elif page == "Event":
-        st.subheader("Event Players")
-        if not event_dates:
-            st.info("No events found.")
-            st.stop()
+        col1, col2 = st.columns([3, 1])  # Adjust width ratio as needed
 
-        selected_date_str = st.selectbox("Select a booked event date for the event", event_dates)
+        with col1:
+            st.subheader("Event Players")
 
+        with col2:
+            if not event_dates:
+                st.info("No events found.")
+                st.stop()
+
+            selected_date_str = st.selectbox("Select Event Date", event_dates)
         event_data = load_event_data(selected_date_str)
         players = event_data.get("players", [])
         currency_pot = event_data.get("currency_pot", 0)
