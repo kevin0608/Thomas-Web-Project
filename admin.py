@@ -149,10 +149,9 @@ else:
                         )
 
                         if st.button(f"💾 Save Note for {player.get('name', 'No Name')}", key=f"save_note_{i}_{selected_date_str}"):
-                            event_data["players"][i-1]["note"] = note_text
+                            # Update note in event_data using session state value from textarea
+                            event_data["players"][i-1]["note"] = st.session_state[player_note_key]
                             save_event_data(selected_date_str, event_data)
-
-                            st.session_state[player_note_key] = note_text
 
                             st.success("Player note saved!")
                             st.rerun()
