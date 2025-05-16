@@ -129,12 +129,41 @@ else:
         else:
             if players:
                 for i, player in enumerate(players, 1):
+                    edit_name_key = f"edit_name_mode_{i}"
+                    if edit_name_key not in st.session_state:
+                        st.session_state[edit_name_key] = False
+
                     with st.expander(f"{i}. {player.get('name', 'No Name')}"):
-                        st.write(f"**Age:** {player.get('age', '')}")
-                        st.write(f"**Email:** {player.get('email', '')}")
-                        st.write(f"**Phone:** {player.get('phone', '')}")
-                        st.write(f"**Secrets:** {player.get('secrets', '')}")
-                        st.write(f"**Currency:** {player.get('currency', 2000)}")
+                        if not st.session_state[edit_name_key]:
+                            # Show all fields normally, name is only in header
+                            st.write(f"**Age:** {player.get('age', '')}")
+                            st.write(f"**Email:** {player.get('email', '')}")
+                            st.write(f"**Phone:** {player.get('phone', '')}")
+                            st.write(f"**Secrets:** {player.get('secrets', '')}")
+                            st.write(f"**Currency:** {player.get('currency', 2000)}")
+
+                            if st.button("Edit Name", key=f"edit_name_btn_{i}"):
+                                st.session_state[edit_name_key] = True
+                                st.experimental_rerun()
+
+                        else:
+                            # Editing name input
+                            new_name = st.text_input("Edit Name", value=player.get('name', ''), key=f"name_input_{i}")
+
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                if st.button("Save", key=f"save_name_btn_{i}"):
+                                    players[i - 1]["name"] = new_name
+                                    event_data["players"] = players
+                                    save_event_data(selected_date_str, event_data)
+                                    st.session_state[edit_name_key] = False
+                                    st.success(f"Name updated to {new_name}!")
+                                    st.rerun()
+
+                with col2:
+                    if st.button("Cancel", key=f"cancel_name_btn_{i}"):
+                        st.session_state[edit_name_key] = False
+                        st.experimental_rerun()
 
                         # Load existing note for this player from data (not session_state) for fresh data each run
                         player_note_key = f"note_player_{i}_{selected_date_str}"
