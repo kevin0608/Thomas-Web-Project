@@ -195,8 +195,6 @@ else:
             y=alt.Y('Player:N', axis=None),
             color='Player:N',
             tooltip=["Player", "Currency"]
-        ).properties(
-            title=None  # This removes the chart title
 )
 
 
