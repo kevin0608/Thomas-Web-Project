@@ -144,7 +144,7 @@ else:
 
                             if st.button("Edit Name", key=f"edit_name_btn_{i}"):
                                 st.session_state[edit_name_key] = True
-                                st.experimental_rerun()
+                                st.rerun()
 
                         else:
                             # Editing name input
@@ -163,7 +163,7 @@ else:
                 with col2:
                     if st.button("Cancel", key=f"cancel_name_btn_{i}"):
                         st.session_state[edit_name_key] = False
-                        st.experimental_rerun()
+                        st.rerun()
 
                         # Load existing note for this player from data (not session_state) for fresh data each run
                         player_note_key = f"note_player_{i}_{selected_date_str}"
@@ -179,7 +179,7 @@ else:
                             placeholder="Add notes about this player here..."
                         )
 
-                        if st.button(f"💾 Save Note for {player.get('name', 'No Name')}", key=f"save_note_{i}_{selected_date_str}"):
+                        if st.button(f"Save Note", key=f"save_note_{i}_{selected_date_str}"):
                             # Update note in event_data using session state value from textarea
                             event_data["players"][i-1]["note"] = st.session_state[player_note_key]
                             save_event_data(selected_date_str, event_data)
@@ -187,7 +187,7 @@ else:
                             st.success("Player note saved!")
                             st.rerun()
 
-                        if st.button(f"Delete Player {i}", key=f"delete_{i}_{selected_date_str}"):
+                        if st.button(f"Delete Player", key=f"delete_{i}_{selected_date_str}"):
                             new_players = [p for idx, p in enumerate(players) if idx != i-1]
                             update_players(selected_date_str, new_players)
                             st.success(f"Deleted {player.get('name', 'player')}")
