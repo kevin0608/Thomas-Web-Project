@@ -247,7 +247,7 @@ else:
                     col1, col2 = st.columns(2)
 
                     with col1:
-                        lose_currency = st.number_input(f"Amount to deduct for {player.get('name', 'No Name')}", min_value=0, value=0, key=f"lose_{i}")
+                        lose_currency = st.number_input(f"", min_value=0, value=0, key=f"lose_{i}")
                         if st.button(f"❌ Deduct Currency for {player.get('name', 'No Name')}", key=f"lose_btn_{i}"):
                             if lose_currency > current_currency:
                                 st.warning(f"Cannot deduct more currency than {player.get('name', 'No Name')} has!")
