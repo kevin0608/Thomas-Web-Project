@@ -7,9 +7,7 @@ from datetime import date
 import json
 
 if not firebase_admin._apps:
-    cred_json_str = st.secrets["firebase"]["credentials"]
-    cred_json_str = cred_json_str.replace("\\n", "\n")  # Convert escaped \n to real newlines
-    cred_dict = json.loads(cred_json_str)
+    cred_dict = st.secrets["firebase"]["credentials"]  # Already a dict
     cred = credentials.Certificate(cred_dict)
     firebase_admin.initialize_app(cred)
 
