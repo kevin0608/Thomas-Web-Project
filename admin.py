@@ -206,7 +206,7 @@ else:
             players_list = sorted(bar_data['Player'].unique())
             color_scale = alt.Scale(domain=players_list, range=custom_colors[:len(players_list)])
 
-            stacked_bar_chart = alt.Chart(bar_data).mark_bar().encode(
+            stacked_bar_chart = alt.Chart(bar_data).mark_bar(size=30).encode(
                 x=alt.X('Currency:Q', axis=alt.Axis(title=None)),
                 y=alt.Y('Player:N', axis=alt.Axis(title=None)),
                 color=alt.Color('Player:N', scale=color_scale, legend=None),
