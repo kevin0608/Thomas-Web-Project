@@ -162,13 +162,13 @@ else:
                             st.success(f"Deleted {player.get('name', 'player')}")
                             st.rerun()
 
-                        st.subheader("📓Notes Space")
-                        note_input = st.text_area("Write notes for this event date here...", value=note)
+                st.subheader("📓Notes Space")
+                note_input = st.text_area("Write notes for this event date here...", value=note)
 
-                        if st.button("💾 Save Notes"):
-                            event_data["notes"] = note_input
-                            save_event_data(selected_date_str, event_data)
-                            st.success("Notes saved successfully!")
+                if st.button("💾 Save Notes"):
+                    event_data["notes"] = note_input
+                    save_event_data(selected_date_str, event_data)
+                    st.success("Notes saved successfully!")
 
     elif page == "Event":
         col1, col2 = st.columns([3, 1])  # Adjust width ratio as needed
