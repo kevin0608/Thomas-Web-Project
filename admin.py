@@ -7,20 +7,12 @@ from firebase_admin import credentials, firestore
 import json
 
 if not firebase_admin._apps:
-    # Load JSON string from secrets
     cred_json_str = st.secrets["firebase"]["credentials"]
-
-    # Replace escaped newlines with actual newlines
-    cred_json_str = cred_json_str.replace("\\n", "\n")
-
-    # Parse the JSON string into a dictionary
+    cred_json_str = cred_json_str.replace("\\n", "\n")  # Convert escaped \n to real newlines
     cred_dict = json.loads(cred_json_str)
-
-    # Initialize Firebase app
     cred = credentials.Certificate(cred_dict)
     firebase_admin.initialize_app(cred)
 
-# Get Firestore client
 db = firestore.client()
 
 ACCESS_CODE = "2706"
