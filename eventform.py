@@ -45,8 +45,6 @@ def send_confirmation_email(to_email, user_name, event_date):
 # --- Streamlit UI ---
 st.title("Event Registration Form")
 
-from datetime import date
-
 with st.form("event_form"):
     full_name = st.text_input("Full Name")
     age = st.number_input("Age", min_value=0, step=1)
@@ -66,31 +64,20 @@ with st.form("event_form"):
             try:
                 doc = event_ref.get()
                 if not doc.exists:
-                    # Create document with empty players list if it doesn't exist
                     event_ref.set({"players": []})
-                    players = []
-                else:
-                    players = doc.to_dict().get("players", [])
 
-                # Check if email already registered for this event date
-                email_exists = any(p.get("email", "").lower() == email.lower() for p in players)
+                event_ref.update({
+                    "players": firestore.ArrayUnion([{
+                        "name": full_name,
+                        "age": age,
+                        "secrets": secrets,
+                        "email": email,
+                        "phone": phone
+                    }])
+                })
 
-                if email_exists:
-                    st.error(f"The email {email} is already registered for this event date.")
-                else:
-                    # Add new player
-                    event_ref.update({
-                        "players": firestore.ArrayUnion([{
-                            "name": full_name,
-                            "age": age,
-                            "secrets": secrets,
-                            "email": email,
-                            "phone": phone
-                        }])
-                    })
-
-                    send_confirmation_email(email, full_name, event_date)
-                    st.success("Registration successful!")
+                send_confirmation_email(email, full_name, event_date)
+                st.success("Registration successful! Confirmation email sent.")
 
             except Exception as e:
                 st.error(f"Error saving to Firestore: {e}")
