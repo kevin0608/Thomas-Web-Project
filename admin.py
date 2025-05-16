@@ -243,12 +243,28 @@ else:
                 current_currency = player.get("currency", 2000)
                 st.write(f"**{player.get('name', 'No Name')}** : {current_currency}")
 
+                # Inject CSS to reduce the size of all number inputs
+                st.markdown(
+                    """
+                    <style>
+                    input[type=number] {
+                        max-width: 80px;  /* Adjust width */
+                        padding: 4px 6px;
+                        font-size: 14px;  /* Adjust font size */
+                    }
+                    </style>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
                 with st.expander(""):
-                    col1, col2 = st.columns(2)
+                    col1, col2, col3, col4 = st.columns([1, 0.5, 1, 0.5])  # narrow columns for inputs and buttons
 
                     with col1:
                         lose_currency = st.number_input(f"", min_value=0, value=0, key=f"lose_{i}")
-                        if st.button(f"⁻", key=f"lose_btn_{i}"):
+                    with col2:
+                        if st.button(f"−", key=f"lose_btn_{i}"):
+                            # your logic here
                             if lose_currency > current_currency:
                                 st.warning(f"Cannot deduct more currency than {player.get('name', 'No Name')} has!")
                             else:
@@ -261,9 +277,11 @@ else:
                                 st.success(f"{lose_currency} currency deducted from {player.get('name', 'No Name')}.")
                                 st.rerun()
 
-                    with col2:
+                    with col3:
                         add_currency = st.number_input(f"", min_value=0, value=0, key=f"add_{i}")
+                    with col4:
                         if st.button(f"✚", key=f"add_btn_{i}"):
+                            # your logic here
                             if add_currency > currency_pot:
                                 st.warning(f"Not enough currency in the pot to add {add_currency} to {player.get('name', 'No Name')}.")
                             else:
