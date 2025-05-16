@@ -5,7 +5,7 @@ import altair as alt
 import firebase_admin
 from firebase_admin import credentials, firestore
 import json
-from matplotlib.colors import to_rgb
+# from matplotlib.colors import to_rgb
 
 # Initialize Firebase app only if not already initialized
 if not firebase_admin._apps:
