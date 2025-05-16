@@ -252,14 +252,14 @@ else:
                     height=60
                 )
 
-                st.write(f"**{player.get('name', '')}** - Currency: {current_currency}")
+                st.write(f"**{player.get('name', '')}**: {current_currency}")
 
-                with st.expander(f"Adjust Currency for {player.get('name', '')}"):
+                with st.expander(""):
                     col1, col2 = st.columns(2)
 
                     with col1:
                         lose_currency = st.number_input(f"Amount to deduct for {player.get('name', '')}", min_value=0, value=0)
-                        if st.button(f"❌ Deduct Currency for {player.get('name', '')}", key=f"lose_{player.get('name', '')}"):
+                        if st.button(f"-", key=f"lose_{player.get('name', '')}"):
                             if lose_currency > current_currency:
                                 st.warning(f"Cannot deduct more currency than {player.get('name', '')} has!")
                             else:
@@ -273,7 +273,7 @@ else:
 
                     with col2:
                         gain_currency = st.number_input(f"Amount to add for {player.get('name', '')}", min_value=0, value=0)
-                        if st.button(f"✅ Add Currency for {player.get('name', '')}", key=f"gain_{player.get('name', '')}"):
+                        if st.button(f"+", key=f"gain_{player.get('name', '')}"):
                             if gain_currency > currency_pot:
                                 st.warning("Insufficient currency pot!")
                             else:
