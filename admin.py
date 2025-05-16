@@ -145,6 +145,16 @@ else:
                             if st.button("Edit Name", key=f"edit_name_btn_{i}"):
                                 st.session_state[edit_name_key] = True
                                 st.rerun()
+                            if player_note_key not in st.session_state:
+                                st.session_state[player_note_key] = ""
+
+                            note_text = st.text_area(
+                                "Player Note",
+                                value=st.session_state[player_note_key],
+                                key=player_note_key,
+                                height=100,
+                                placeholder="Add notes about this player here..."
+                                )
 
                         else:
                             # Editing name input
@@ -168,17 +178,7 @@ else:
                                 # Load existing note for this player from data (not session_state) for fresh data each run
                                 player_note_key = f"note_player_{i}_{selected_date_str}"
 
-                                if player_note_key not in st.session_state:
-                                    st.session_state[player_note_key] = ""
-
-                                note_text = st.text_area(
-                                    "Player Note",
-                                    value=st.session_state[player_note_key],
-                                    key=player_note_key,
-                                    height=100,
-                                    placeholder="Add notes about this player here..."
-                                    )
-
+                        
                         if st.button(f"Save Note", key=f"save_note_{i}_{selected_date_str}"):
                             # Update note in event_data using session state value from textarea
                             event_data["players"][i-1]["note"] = st.session_state[player_note_key]
