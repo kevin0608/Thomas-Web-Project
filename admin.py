@@ -190,25 +190,10 @@ else:
                 for p in players
             ])
 
-            # Example color list (20 distinct colors)
-            custom_colors = [
-                '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
-                '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
-                '#393b79', '#637939', '#8c6d31', '#843c39', '#7b4173',
-                '#5254a3', '#9c9ede', '#e7ba52', '#e7969c', '#a55194'
-            ]
-
-            # Dynamically get list of player names (ensure it's sorted for consistent color mapping)
-            players = sorted(bar_data['Player'].unique())
-
-            # Apply only the number of colors needed
-            color_scale = alt.Scale(domain=players, range=custom_colors[:len(players)])
-
-            # Altair chart with custom colors
             stacked_bar_chart = alt.Chart(bar_data).mark_bar().encode(
-                x=alt.X('Currency:Q', axis=alt.Axis(title=None)),
-                y=alt.Y('Player:N', axis=alt.Axis(title=None)),
-                color=alt.Color('Player:N', scale=color_scale),
+                x=alt.X('Currency:Q', axis=alt.Axis(title=None)),  # Hide x-axis title
+                y=alt.Y('Player:N', axis=alt.Axis(title=None)),    # Hide y-axis title but keep tick labels (names)
+                color='Player:N',
                 tooltip=["Player", "Currency"]
             )
 
@@ -238,13 +223,11 @@ else:
             st.markdown(f'<div class="tile-container"><div class="tile">Current Currency Pot:<br>{currency_pot}</div></div>', unsafe_allow_html=True)
 
             st.altair_chart(stacked_bar_chart, use_container_width=True)
-            
+
             for i, player in enumerate(players, 1):
-                if isinstance(player, dict):
-                    current_currency = player.get("currency", 2000)
-                    st.write(f"**{player.get('name', 'No Name')}** - Currency: {current_currency}")
-                else:
-                    st.warning(f"Skipped invalid player entry at position {i}: {player}")
+                current_currency = player.get("currency", 2000)
+                st.write(f"**{player.get('name', 'No Name')}** - Currency: {current_currency}")
+
                 with st.expander(f"Adjust Currency for {player.get('name', 'No Name')}"):
                     col1, col2 = st.columns(2)
 
