@@ -199,8 +199,6 @@ else:
                 title="Players"
             )
 
-            st.altair_chart(stacked_bar_chart, use_container_width=True)
-
             tile_style = """
                 <style>
                 .tile-container {
@@ -224,6 +222,8 @@ else:
             """
             st.markdown(tile_style, unsafe_allow_html=True)
             st.markdown(f'<div class="tile-container"><div class="tile">Current Currency Pot:<br>{currency_pot}</div></div>', unsafe_allow_html=True)
+
+            st.altair_chart(stacked_bar_chart, use_container_width=True)
 
             for i, player in enumerate(players, 1):
                 current_currency = player.get("currency", 2000)
