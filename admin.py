@@ -1,11 +1,10 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, date
 import altair as alt
 import firebase_admin
 from firebase_admin import credentials, firestore
 import json
-
 
 # Initialize Firebase app only if not already initialized
 if not firebase_admin._apps:
@@ -14,31 +13,13 @@ if not firebase_admin._apps:
     cred = credentials.Certificate(cred_dict)
     firebase_admin.initialize_app(cred)
 
-# Now get the Firestore client
 db = firestore.client()
 
 ACCESS_CODE = "2706"
 
-# Firestore document path
-DATA_DOC = "admin_dashboard/data"
-
-# Load data from Firestore
-def load_data():
-    doc_ref = db.document(DATA_DOC)
-    doc = doc_ref.get()
-    if doc.exists:
-        return doc.to_dict()
-    else:
-        return {"events": {}}
-
-# Save data to Firestore
-def save_data(data):
-    doc_ref = db.document(DATA_DOC)
-    doc_ref.set(data)
-
 st.set_page_config(page_title="Admin Dashboard", layout="wide")
 
-# Login logic
+# Session login state
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
@@ -63,21 +44,34 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-if not st.session_state.get('logged_in', False):
+def load_event_data(event_date_str):
+    doc_ref = db.collection("events").document(event_date_str)
+    doc = doc_ref.get()
+    if doc.exists:
+        return doc.to_dict()
+    else:
+        # Default empty structure for new event date
+        return {"players": [], "notes": "", "currency_pot": 0}
+
+def save_event_data(event_date_str, data):
+    doc_ref = db.collection("events").document(event_date_str)
+    doc_ref.set(data)
+
+def update_players(event_date_str, new_players):
+    doc_ref = db.collection("events").document(event_date_str)
+    doc_ref.update({"players": new_players})
+
+if not st.session_state.logged_in:
     st.title("Enter Access Code")
     with st.container():
-        code_input = st.text_input(
-            "", type="password", key="code_input", label_visibility="collapsed", 
-            placeholder="Enter code", help="Enter your access code here", max_chars=6
-        )
+        code_input = st.text_input("", type="password", key="code_input", label_visibility="collapsed", placeholder="Enter code", help="Enter your access code here", max_chars=6)
 
     if st.button("Enter", key="login_button"):
         if code_input == ACCESS_CODE:
             st.session_state.logged_in = True
             st.success("Login successful! Redirecting...")
             st.balloons()
-            # Refresh by changing session state
-            st.session_state["refresh"] = not st.session_state.get("refresh", False)
+            st.rerun()
         else:
             st.error("Invalid code. Please try again.")
 
@@ -87,23 +81,22 @@ else:
     st.sidebar.markdown("### Welcome Mr. Gom !")
     page = st.sidebar.radio("📂 Navigation", ["Calendar", "Event"])
 
-    # Load event data
-    data = load_data()
+    # Load all event dates from Firestore collection 'events'
+    # Note: Firestore collection list must be fetched via list_documents()
+    event_docs = db.collection("events").list_documents()
+    event_dates = [doc.id for doc in event_docs]
+    event_dates.sort()
 
     if page == "Calendar":
-        event_dates = list(data.get("events", {}).keys())
-        event_dates.sort()
-
         if not event_dates:
             st.info("No events found.")
             st.stop()
 
         date_objects = [datetime.strptime(d, "%Y-%m-%d").date() for d in event_dates]
         selected_date = st.selectbox("Select a booked event date:", date_objects)
-
         selected_date_str = selected_date.isoformat()
-        event_data = data["events"].get(selected_date_str, {})
 
+        event_data = load_event_data(selected_date_str)
         players = event_data.get("players", [])
         note = event_data.get("notes", "")
 
@@ -120,13 +113,12 @@ else:
         if show_dataframe:
             if players:
                 player_data = [{
-                    "Full Name": player.get('name', ''),
+                    "Name": player.get('name', ''),
                     "Age": player.get('age', ''),
                     "Email": player.get('email', ''),
                     "Phone": player.get('phone', ''),
                     "Secrets": player.get('secrets', ''),
-                    "Currency": player.get('currency', 2000),
-                    "Note": player.get('note', '')
+                    "Currency": player.get('currency', 2000)
                 } for player in players]
 
                 df = pd.DataFrame(player_data)
@@ -143,7 +135,7 @@ else:
                         st.write(f"**Secrets:** {player.get('secrets', '')}")
                         st.write(f"**Currency:** {player.get('currency', 2000)}")
 
-                        # Player note key for session state
+                        # Load existing note for this player if any
                         player_note_key = f"note_player_{i}_{selected_date_str}"
                         if player_note_key not in st.session_state:
                             st.session_state[player_note_key] = player.get("note", "")
@@ -157,60 +149,54 @@ else:
                         )
 
                         if st.button(f"💾 Save Note for {player.get('name', 'No Name')}", key=f"save_note_{i}_{selected_date_str}"):
+                            # Update note in data
                             data["events"][selected_date_str]["players"][i-1]["note"] = note_text
                             save_data(data)
                             st.success("Player note saved!")
-                            # Refresh the page by toggling session_state
-                            st.session_state["refresh"] = not st.session_state.get("refresh", False)
 
                         if st.button(f"Delete Player {i}", key=f"delete_{i}_{selected_date_str}"):
-                            players = [p for p in players if p.get("name") != player.get("name")]
-                            data["events"][selected_date_str]["players"] = players
-                            save_data(data)
-                            st.success(f"Deleted {player.get('name', 'No Name')}")
-                            st.session_state["refresh"] = not st.session_state.get("refresh", False)
+                            new_players = [p for idx, p in enumerate(players) if idx != i-1]
+                            update_players(selected_date_str, new_players)
+                            st.success(f"Deleted {player.get('name', 'player')}")
+                            st.rerun()
 
             st.subheader("📓Notes Space")
             note_input = st.text_area("Write notes for this event date here...", value=note)
 
             if st.button("💾 Save Notes"):
-                data["events"][selected_date_str]["notes"] = note_input
-                save_data(data)
+                event_data["notes"] = note_input
+                save_event_data(selected_date_str, event_data)
                 st.success("Notes saved successfully!")
-                st.session_state["refresh"] = not st.session_state.get("refresh", False)
 
     elif page == "Event":
         st.subheader("Event Players")
-        event_dates = list(data.get("events", {}).keys())
-        event_dates.sort()
-
         if not event_dates:
             st.info("No events found.")
             st.stop()
 
-        selected_date = st.selectbox("Select a booked event date for the event", event_dates)
-        event_data = data["events"].get(selected_date, {})
+        selected_date_str = st.selectbox("Select a booked event date for the event", event_dates)
 
+        event_data = load_event_data(selected_date_str)
         players = event_data.get("players", [])
-
-        bar_data = pd.DataFrame([
-            {"Player": p.get("name", ""), "Currency": p.get("currency", 2000)}
-            for p in players
-        ])
-
-        stacked_bar_chart = alt.Chart(bar_data).mark_bar().encode(
-            x='Currency:Q',
-            y='Player:N',
-            color='Player:N',
-            tooltip=["Player", "Currency"]
-        ).properties(
-            title="Players Currency Overview"
-        )
-
-        st.altair_chart(stacked_bar_chart, use_container_width=True)
+        currency_pot = event_data.get("currency_pot", 0)
 
         if players:
-            currency_pot = event_data.get("currency_pot", 0)
+            bar_data = pd.DataFrame([
+                {"Player": p.get("name", ""), "Currency": p.get("currency", 2000)}
+                for p in players
+            ])
+
+            stacked_bar_chart = alt.Chart(bar_data).mark_bar().encode(
+                x='Currency:Q',
+                y='Player:N',
+                color='Player:N',
+                tooltip=["Player", "Currency"]
+            ).properties(
+                title="Players Currency Overview"
+            )
+
+            st.altair_chart(stacked_bar_chart, use_container_width=True)
+
             tile_style = """
                 <style>
                 .tile-container {
@@ -237,56 +223,40 @@ else:
 
             for i, player in enumerate(players, 1):
                 current_currency = player.get("currency", 2000)
-                bar_df = pd.DataFrame({
-                    "Player": [player.get('name', '')],
-                    "Currency": [current_currency]
-                })
+                st.write(f"**{player.get('name', 'No Name')}** - Currency: {current_currency}")
 
-                bar = alt.Chart(bar_df).mark_bar(
-                    color="#FF6F00",
-                    size=40
-                ).encode(
-                    x=alt.X('Currency:Q', scale=alt.Scale(domain=[0, 16000])),
-                    y=alt.Y('Player:N')
-                ).properties(
-                    height=60
-                )
-
-                st.write(f"**{player.get('name', '')}**: {current_currency}")
-
-                with st.expander(""):
+                with st.expander(f"Adjust Currency for {player.get('name', 'No Name')}"):
                     col1, col2 = st.columns(2)
 
                     with col1:
-                        lose_currency = st.number_input(f"Amount to deduct for {player.get('name', '')}", min_value=0, value=0)
-                        if st.button(f"-", key=f"lose_{player.get('name', '')}"):
+                        lose_currency = st.number_input(f"Amount to deduct for {player.get('name', 'No Name')}", min_value=0, value=0, key=f"lose_{i}")
+                        if st.button(f"❌ Deduct Currency for {player.get('name', 'No Name')}", key=f"lose_btn_{i}"):
                             if lose_currency > current_currency:
-                                st.warning(f"Cannot deduct more currency than {player.get('name', '')} has!")
+                                st.warning(f"Cannot deduct more currency than {player.get('name', 'No Name')} has!")
                             else:
                                 new_currency = current_currency - lose_currency
                                 currency_pot += lose_currency
-                                data["events"][selected_date]["players"][i - 1]["currency"] = new_currency
-                                data["events"][selected_date]["currency_pot"] = currency_pot
-                                save_data(data)
-                                st.success(f"Deducted {lose_currency} currency from {player.get('name', '')}.")
-                                st.session_state["refresh"] = not st.session_state.get("refresh", False)
+                                players[i - 1]["currency"] = new_currency
+                                event_data["players"] = players
+                                event_data["currency_pot"] = currency_pot
+                                save_event_data(selected_date_str, event_data)
+                                st.success(f"{lose_currency} currency deducted from {player.get('name', 'No Name')}.")
+                                st.rerun()
 
                     with col2:
-                        gain_currency = st.number_input(f"Amount to add for {player.get('name', '')}", min_value=0, value=0)
-                        if st.button(f"+", key=f"gain_{player.get('name', '')}"):
-                            if gain_currency > currency_pot:
-                                st.warning("Insufficient currency pot!")
+                        add_currency = st.number_input(f"Amount to add for {player.get('name', 'No Name')}", min_value=0, value=0, key=f"add_{i}")
+                        if st.button(f"✅ Add Currency to {player.get('name', 'No Name')}", key=f"add_btn_{i}"):
+                            if add_currency > currency_pot:
+                                st.warning(f"Not enough currency in the pot to add {add_currency} to {player.get('name', 'No Name')}.")
                             else:
-                                new_currency = current_currency + gain_currency
-                                currency_pot -= gain_currency
-                                data["events"][selected_date]["players"][i - 1]["currency"] = new_currency
-                                data["events"][selected_date]["currency_pot"] = currency_pot
-                                save_data(data)
-                                st.success(f"Added {gain_currency} currency to {player.get('name', '')}.")
-                                st.session_state["refresh"] = not st.session_state.get("refresh", False)
-
-                st.altair_chart(bar, use_container_width=True)
+                                new_currency = current_currency + add_currency
+                                currency_pot -= add_currency
+                                players[i - 1]["currency"] = new_currency
+                                event_data["players"] = players
+                                event_data["currency_pot"] = currency_pot
+                                save_event_data(selected_date_str, event_data)
+                                st.success(f"{add_currency} currency added to {player.get('name', 'No Name')}.")
+                                st.rerun()
 
         else:
-            st.warning("No players found for this event.")
-
+            st.warning("No players found for this event date.")
