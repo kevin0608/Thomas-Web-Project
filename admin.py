@@ -190,9 +190,9 @@ else:
                 x='Currency:Q',
                 y='Player:N',
                 color='Player:N',
-                tooltip=["Player", "Currency"]
+                tooltip=["", ""]
             ).properties(
-                title="Players Currency Overview"
+                title="Players"
             )
 
             st.altair_chart(stacked_bar_chart, use_container_width=True)
