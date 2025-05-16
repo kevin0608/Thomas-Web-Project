@@ -45,6 +45,7 @@ def send_confirmation_email(to_email, user_name, event_date):
 # --- Streamlit UI ---
 st.title("Event Registration Form")
 
+
 with st.form("event_form"):
     full_name = st.text_input("Full Name")
     age = st.number_input("Age", min_value=0, step=1)
@@ -64,19 +65,22 @@ with st.form("event_form"):
             try:
                 doc = event_ref.get()
                 if not doc.exists:
-                    # Create document with empty players list if it doesn't exist
+                    # Create the document if it doesn't exist
                     event_ref.set({"players": []})
                     players = []
                 else:
                     players = doc.to_dict().get("players", [])
 
-                # Check if email already registered for this event date
-                email_exists = any(p.get("email", "").lower() == email.lower() for p in players)
+                # ✅ Email duplication check
+                email_exists = any(
+                    p.get("email", "").strip().lower() == email.strip().lower()
+                    for p in players
+                )
 
                 if email_exists:
-                    st.error(f"The email {email} is already registered for this event date.")
+                    st.error(f"The email **{email}** is already registered for this event date.")
                 else:
-                    # Add new player
+                    # ✅ Add new player if email is unique
                     event_ref.update({
                         "players": firestore.ArrayUnion([{
                             "name": full_name,
@@ -87,8 +91,9 @@ with st.form("event_form"):
                         }])
                     })
 
+                    # Optional: send a confirmation
                     send_confirmation_email(email, full_name, event_date)
-                    st.success("Registration successful!")
+                    st.success("✅ Registration successful!")
 
             except Exception as e:
-                st.error(f"Error saving to Firestore: {e}")
+                st.error(f"❌ Error saving to Firestore: {e}")
