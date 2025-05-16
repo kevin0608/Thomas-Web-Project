@@ -191,11 +191,13 @@ else:
             ])
 
             stacked_bar_chart = alt.Chart(bar_data).mark_bar().encode(
-            x=alt.X('Currency:Q', axis=None),
-            y=alt.Y('Player:N', axis=None),
-            color='Player:N',
-            tooltip=["Player", "Currency"]
-)
+                x=alt.X('Currency:Q', axis=alt.Axis(title=None)),  # Hide x-axis title
+                y=alt.Y('Player:N', axis=alt.Axis(title=None)),    # Hide y-axis title but keep tick labels (names)
+                color='Player:N',
+                tooltip=["Player", "Currency"]
+            ).properties(
+                title=None  # Removes chart title
+            )
 
 
             tile_style = """
