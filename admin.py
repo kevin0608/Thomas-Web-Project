@@ -160,24 +160,24 @@ else:
                                     st.success(f"Name updated to {new_name}!")
                                     st.rerun()
 
-                with col2:
-                    if st.button("Cancel", key=f"cancel_name_btn_{i}"):
-                        st.session_state[edit_name_key] = False
-                        st.rerun()
+                            with col2:
+                                if st.button("Cancel", key=f"cancel_name_btn_{i}"):
+                                    st.session_state[edit_name_key] = False
+                                    st.rerun()
 
-                        # Load existing note for this player from data (not session_state) for fresh data each run
-                        player_note_key = f"note_player_{i}_{selected_date_str}"
+                                    # Load existing note for this player from data (not session_state) for fresh data each run
+                                    player_note_key = f"note_player_{i}_{selected_date_str}"
 
-                        if player_note_key not in st.session_state:
-                            st.session_state[player_note_key] = ""
+                                    if player_note_key not in st.session_state:
+                                        st.session_state[player_note_key] = ""
 
-                        note_text = st.text_area(
-                            "Player Note",
-                            value=st.session_state[player_note_key],
-                            key=player_note_key,
-                            height=100,
-                            placeholder="Add notes about this player here..."
-                        )
+                                    note_text = st.text_area(
+                                        "Player Note",
+                                        value=st.session_state[player_note_key],
+                                        key=player_note_key,
+                                        height=100,
+                                        placeholder="Add notes about this player here..."
+                                    )
 
                         if st.button(f"Save Note", key=f"save_note_{i}_{selected_date_str}"):
                             # Update note in event_data using session state value from textarea
