@@ -76,8 +76,6 @@ if not st.session_state.logged_in:
             st.error("Invalid code. Please try again.")
 
 else:
-    st.title("My Dashboard")
-    st.divider()
     st.sidebar.markdown("### Welcome Mr. Gom !")
     page = st.sidebar.radio("📂 Navigation", ["Calendar", "Event"])
 
@@ -88,6 +86,8 @@ else:
     event_dates.sort()
 
     if page == "Calendar":
+        st.title("My Dashboard")
+        st.divider()
         if not event_dates:
             st.info("No events found.")
             st.stop()
