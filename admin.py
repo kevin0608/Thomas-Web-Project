@@ -285,10 +285,15 @@ else:
                 </style>
             """, unsafe_allow_html=True)
 
+            def get_color_for_player(name, color_list):
+                idx = abs(hash(name)) % len(color_list)
+                return color_list[idx]
+
+            # Later in your loop:
             for i, player in enumerate(players, 1):
                 player_name = player.get("name", "No Name")
                 current_currency = player.get("currency", 2000)
-                player_color = custom_colors[(i - 1) % len(custom_colors)]
+                player_color = get_color_for_player(player_name, custom_colors)
                 font_color = get_font_color(player_color)
 
                 st.write(f"**{player_name}** : {current_currency}")
