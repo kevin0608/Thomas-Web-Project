@@ -135,21 +135,42 @@ else:
 
                     with st.expander(f"{i}. {player.get('name', 'No Name')}"):
                         if not st.session_state[edit_name_key]:
-                            # Show all fields normally, name is only in header
+                            # Display player fields
                             st.write(f"**Age:** {player.get('age', '')}")
                             st.write(f"**Email:** {player.get('email', '')}")
                             st.write(f"**Phone:** {player.get('phone', '')}")
                             st.write(f"**Secrets:** {player.get('secrets', '')}")
                             st.write(f"**Currency:** {player.get('currency', 2000)}")
 
-                            if st.button("Edit Name", key=f"edit_name_btn_{i}"):
-                                st.session_state[edit_name_key] = True
-                                st.rerun()
-                        
-                        else:
-                            # Editing name input
-                            new_name = st.text_input("Edit Name", value=player.get('name', ''), key=f"name_input_{i}")
+                            # Note input
+                            player_note_key = f"note_player_{i}_{selected_date_str}"
+                            default_note = player.get("note", "")
+                            st.text_area("Player Note", key=player_note_key, value=default_note, height=100)
 
+                            # Aligned buttons
+                            col1, col2, col3 = st.columns(3)
+                            with col1:
+                                if st.button("Edit Name", key=f"edit_name_btn_{i}"):
+                                    st.session_state[edit_name_key] = True
+                                    st.rerun()
+
+                            with col2:
+                                if st.button("Save Note", key=f"save_note_{i}_{selected_date_str}"):
+                                    event_data["players"][i - 1]["note"] = st.session_state[player_note_key]
+                                    save_event_data(selected_date_str, event_data)
+                                    st.success("Player note saved!")
+                                    st.rerun()
+
+                            with col3:
+                                if st.button("Delete Player", key=f"delete_{i}_{selected_date_str}"):
+                                    new_players = [p for idx, p in enumerate(players) if idx != i - 1]
+                                    update_players(selected_date_str, new_players)
+                                    st.success(f"Deleted {player.get('name', 'player')}")
+                                    st.rerun()
+
+                        else:
+                            # Edit mode
+                            new_name = st.text_input("Edit Name", value=player.get('name', ''), key=f"name_input_{i}")
                             col1, col2 = st.columns(2)
                             with col1:
                                 if st.button("Save", key=f"save_name_btn_{i}"):
@@ -159,37 +180,20 @@ else:
                                     st.session_state[edit_name_key] = False
                                     st.success(f"Name updated to {new_name}!")
                                     st.rerun()
-
                             with col2:
                                 if st.button("Cancel", key=f"cancel_name_btn_{i}"):
                                     st.session_state[edit_name_key] = False
                                     st.rerun()
 
-                                # Load existing note for this player from data (not session_state) for fresh data each run
-                                player_note_key = f"note_player_{i}_{selected_date_str}"
+            # General event notes section
+            st.subheader("📓Notes Space")
+            note_input = st.text_area("Write notes for this event date here...", value=note)
 
-                        
-                        if st.button(f"Save Note", key=f"save_note_{i}_{selected_date_str}"):
-                            # Update note in event_data using session state value from textarea
-                            event_data["players"][i-1]["note"] = st.session_state[player_note_key]
-                            save_event_data(selected_date_str, event_data)
+            if st.button("💾 Save Notes"):
+                event_data["notes"] = note_input
+                save_event_data(selected_date_str, event_data)
+                st.success("Notes saved successfully!")
 
-                            st.success("Player note saved!")
-                            st.rerun()
-
-                        if st.button(f"Delete Player", key=f"delete_{i}_{selected_date_str}"):
-                            new_players = [p for idx, p in enumerate(players) if idx != i-1]
-                            update_players(selected_date_str, new_players)
-                            st.success(f"Deleted {player.get('name', 'player')}")
-                            st.rerun()
-
-                st.subheader("📓Notes Space")
-                note_input = st.text_area("Write notes for this event date here...", value=note)
-
-                if st.button("💾 Save Notes"):
-                    event_data["notes"] = note_input
-                    save_event_data(selected_date_str, event_data)
-                    st.success("Notes saved successfully!")
 
     elif page == "Event":
         col1, col2 = st.columns([3, 1])  # Adjust width ratio as needed
