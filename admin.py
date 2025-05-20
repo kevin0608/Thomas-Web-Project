@@ -212,13 +212,13 @@ else:
         currency_pot = event_data.get("currency_pot", 0)
 
         if players:
-            # Example bar_data, replace with your players list
+            # Prepare DataFrame for the bar chart
             bar_data = pd.DataFrame([
                 {"Player": p.get("name", ""), "Currency": p.get("currency", 2000)}
                 for p in players
             ])
 
-            # Define a large enough palette (here 40 distinct colors)
+            # Define a large enough palette (40 distinct colors)
             custom_colors = [
                 '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
                 '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
@@ -230,23 +230,25 @@ else:
                 '#e78ac3', '#a6d854', '#ffd92f', '#e5c494', '#b3b3b3'
             ]
 
+            # Get sorted unique player names for color domain
             players_list = sorted(bar_data['Player'].unique())
             color_scale = alt.Scale(domain=players_list, range=custom_colors[:len(players_list)])
 
+            # Create Altair stacked bar chart
             stacked_bar_chart = alt.Chart(bar_data).mark_bar(size=15).encode(
-            x=alt.X('Currency:Q', axis=alt.Axis(title=None)),
-            y=alt.Y('Player:N', axis=alt.Axis(title=None), sort=alt.EncodingSortField(field="Currency", order="descending")),
-            color=alt.Color('Player:N', scale=color_scale, legend=None),
-            tooltip=["Player", "Currency"]
-        )
+                x=alt.X('Currency:Q', axis=alt.Axis(title=None)),
+                y=alt.Y('Player:N', axis=alt.Axis(title=None), sort=alt.EncodingSortField(field="Currency", order="descending")),
+                color=alt.Color('Player:N', scale=color_scale, legend=None),
+                tooltip=["Player", "Currency"]
+            )
 
+            # Tile style for current currency pot display
             tile_style = """
                 <style>
                 .tile-container {
                     display: flex;
                     justify-content: center;
                 }
-
                 .tile {
                     background: linear-gradient(to right, #ff512f, #dd2476, #00bcd4, #8e44ad, #f39c12);
                     color: white;   
@@ -266,6 +268,13 @@ else:
 
             st.altair_chart(stacked_bar_chart, use_container_width=True)
 
+            # Helper to convert hex color to rgb normalized for brightness calculation
+            def to_rgb(hex_color):
+                hex_color = hex_color.lstrip('#')
+                lv = len(hex_color)
+                return tuple(int(hex_color[i:i + lv // 3], 16) / 255 for i in range(0, lv, lv // 3))
+
+            # Function to get font color based on background brightness
             def get_font_color(bg_color):
                 r, g, b = to_rgb(bg_color)
                 brightness = r*0.299 + g*0.587 + b*0.114
@@ -285,15 +294,19 @@ else:
                 </style>
             """, unsafe_allow_html=True)
 
-            def get_color_for_player(name, color_list):
-                idx = abs(hash(name)) % len(color_list)
+            # Use player index in players_list to pick the color
+            def get_color_for_player(name, players_list, color_list):
+                try:
+                    idx = players_list.index(name)
+                except ValueError:
+                    idx = 0  # fallback color index if player not found
                 return color_list[idx]
 
-            # Later in your loop:
+            # Display each player with matching color
             for i, player in enumerate(players, 1):
                 player_name = player.get("name", "No Name")
                 current_currency = player.get("currency", 2000)
-                player_color = get_color_for_player(player_name, custom_colors)
+                player_color = get_color_for_player(player_name, players_list, custom_colors)
                 font_color = get_font_color(player_color)
 
                 st.write(f"**{player_name}** : {current_currency}")
@@ -304,15 +317,14 @@ else:
                         <div style='
                             background-color: {player_color}; 
                             color: {font_color}; 
-                            padding: 4px 6px;  /* smaller padding */
+                            padding: 4px 6px; 
                             border-radius: 6px; 
-                            font-size: 0.9rem;  /* smaller font */
+                            font-size: 0.9rem; 
                             margin-bottom: 4px;
                         '>
                         """,
                         unsafe_allow_html=True
                     )
-
                     col1, col2 = st.columns([1, 1])
 
                     with col1:
